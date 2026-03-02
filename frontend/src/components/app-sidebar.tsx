@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   ChevronUp,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -41,6 +42,10 @@ const menuItems = [
   { title: 'Categories', url: '/categories', icon: FolderTree },
 ];
 
+const adminItems = [
+  { title: 'Users', url: '/users', icon: Users },
+];
+
 const settingsItems = [
   { title: 'Settings', url: '/settings', icon: Settings },
 ];
@@ -48,6 +53,8 @@ const settingsItems = [
 export function AppSidebar() {
   const pathname = usePathname();
   const { data: session } = useSession();
+
+  const isAdmin = (session?.user as any)?.role === 'ADMIN';
 
   const isActive = (url: string) => {
     if (url === '/dashboard') {
@@ -83,6 +90,26 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {adminItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
+                      <Link href={item.url}>
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         <SidebarGroup>
           <SidebarGroupLabel>System</SidebarGroupLabel>

@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { signIn } from 'next-auth/react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,10 +14,17 @@ import api from '@/lib/api';
 export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState<boolean | null>(null);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+
+  useEffect(() => {
+    api.checkRegistrationStatus()
+      .then((data) => setIsOpen(data.isOpen))
+      .catch(() => setIsOpen(false));
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +43,21 @@ export default function RegisterPage() {
 
     try {
       await api.register(email, password, name);
-      toast.success('Account created successfully');
-      router.push('/dashboard');
+      toast.success('Account created successfully! You are now the admin.');
+
+      // Sign in with NextAuth after successful registration
+      const result = await signIn('credentials', {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        router.push('/login');
+      } else {
+        router.push('/dashboard');
+        router.refresh();
+      }
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
     } finally {
@@ -44,13 +65,41 @@ export default function RegisterPage() {
     }
   };
 
+  if (isOpen === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <p>Loading...</p>
+      </div>
+    );
+  }
+
+  if (!isOpen) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
+        <Card className="w-full max-w-md">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl">Registration Closed</CardTitle>
+            <CardDescription>
+              Public registration is not available. Contact your administrator to get an account.
+            </CardDescription>
+          </CardHeader>
+          <CardFooter className="justify-center">
+            <Link href="/login">
+              <Button variant="outline">Back to Login</Button>
+            </Link>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Create Account</CardTitle>
+          <CardTitle className="text-2xl">Create Admin Account</CardTitle>
           <CardDescription>
-            Sign up for PetShop Asset Management
+            Set up the first admin account for your pet shop
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -104,7 +153,7 @@ export default function RegisterPage() {
               />
             </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? 'Creating account...' : 'Create Account'}
+              {isLoading ? 'Creating account...' : 'Create Admin Account'}
             </Button>
           </form>
         </CardContent>

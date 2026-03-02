@@ -74,13 +74,8 @@ class ApiClient {
     return result;
   }
 
-  async googleAuth(data: { email: string; name: string; googleId: string; image?: string }): Promise<{ user: User; token: string }> {
-    const result = await this.request<{ user: User; token: string }>('/auth/google', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
-    this.setToken(result.token);
-    return result;
+  async checkRegistrationStatus(): Promise<{ isOpen: boolean }> {
+    return this.request<{ isOpen: boolean }>('/auth/registration-status');
   }
 
   async getMe(): Promise<User> {
@@ -89,6 +84,29 @@ class ApiClient {
 
   logout() {
     this.setToken(null);
+  }
+
+  // User Management (Admin only)
+  async getUsers(): Promise<User[]> {
+    return this.request<User[]>('/auth/users');
+  }
+
+  async createUser(data: { email: string; password: string; name: string; role: string }): Promise<User> {
+    return this.request<User>('/auth/users', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateUser(id: string, data: { name?: string; role?: string; password?: string }): Promise<User> {
+    return this.request<User>(`/auth/users/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await this.request(`/auth/users/${id}`, { method: 'DELETE' });
   }
 
   // Dashboard
