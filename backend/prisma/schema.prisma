@@ -1,0 +1,174 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============== AUTH MODELS ==============
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String?
+  name          String
+  role          Role      @default(STAFF)
+  googleId      String?   @unique
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+// ============== CATEGORY MODEL ==============
+
+model Category {
+  id          String       @id @default(cuid())
+  name        String
+  type        CategoryType
+  description String?
+  parentId    String?
+  parent      Category?    @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]   @relation("CategoryHierarchy")
+  pets        Pet[]
+  products    Product[]
+  equipment   Equipment[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([name, type])
+  @@map("categories")
+}
+
+enum CategoryType {
+  PET
+  PRODUCT
+  EQUIPMENT
+}
+
+// ============== PET MODEL ==============
+
+model Pet {
+  id           String      @id @default(cuid())
+  name         String
+  species      String
+  breed        String?
+  age          Int?
+  ageUnit      AgeUnit     @default(MONTHS)
+  gender       Gender?
+  price        Decimal     @db.Decimal(10, 2)
+  costPrice    Decimal?    @db.Decimal(10, 2)
+  healthStatus HealthStatus @default(HEALTHY)
+  description  String?
+  images       String[]
+  categoryId   String?
+  category     Category?   @relation(fields: [categoryId], references: [id])
+  quantity     Int         @default(1)
+  status       PetStatus   @default(AVAILABLE)
+  weight       Decimal?    @db.Decimal(10, 2)
+  color        String?
+  vaccinated   Boolean     @default(false)
+  neutered     Boolean     @default(false)
+  microchipped Boolean     @default(false)
+  notes        String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  @@map("pets")
+}
+
+enum AgeUnit {
+  DAYS
+  WEEKS
+  MONTHS
+  YEARS
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum HealthStatus {
+  HEALTHY
+  SICK
+  RECOVERING
+  QUARANTINE
+}
+
+enum PetStatus {
+  AVAILABLE
+  SOLD
+  RESERVED
+  NOT_FOR_SALE
+}
+
+// ============== PRODUCT MODEL ==============
+
+model Product {
+  id            String   @id @default(cuid())
+  name          String
+  sku           String   @unique
+  description   String?
+  price         Decimal  @db.Decimal(10, 2)
+  costPrice     Decimal? @db.Decimal(10, 2)
+  images        String[]
+  categoryId    String?
+  category      Category? @relation(fields: [categoryId], references: [id])
+  quantity      Int      @default(0)
+  minStockLevel Int      @default(5)
+  unit          String?
+  brand         String?
+  supplier      String?
+  barcode       String?  @unique
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("products")
+}
+
+// ============== EQUIPMENT MODEL ==============
+
+model Equipment {
+  id            String          @id @default(cuid())
+  name          String
+  description   String?
+  serialNumber  String?         @unique
+  images        String[]
+  categoryId    String?
+  category      Category?       @relation(fields: [categoryId], references: [id])
+  condition     EquipmentCondition @default(GOOD)
+  purchaseDate  DateTime?
+  purchasePrice Decimal?        @db.Decimal(10, 2)
+  currentValue  Decimal?        @db.Decimal(10, 2)
+  location      String?
+  manufacturer  String?
+  model         String?
+  warrantyExpiry DateTime?
+  notes         String?
+  isActive      Boolean         @default(true)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@map("equipment")
+}
+
+enum EquipmentCondition {
+  EXCELLENT
+  GOOD
+  FAIR
+  POOR
+  NEEDS_REPAIR
+  OUT_OF_SERVICE
+}
