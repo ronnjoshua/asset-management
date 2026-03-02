@@ -24,9 +24,12 @@ class ApiClient {
   }
 
   getToken(): string | null {
-    if (this.token) return this.token;
     if (typeof window !== 'undefined') {
-      this.token = localStorage.getItem('token');
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        this.token = storedToken;
+        return storedToken;
+      }
     }
     return this.token;
   }
