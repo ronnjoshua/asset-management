@@ -86,13 +86,13 @@ export function EquipmentDialog({ open, onOpenChange, equipment, onSave }: Equip
     setLoading(true);
 
     try {
-      const data = {
+      const data: Partial<Equipment> = {
         name: form.name,
         description: form.description || undefined,
         serialNumber: form.serialNumber || undefined,
         images: form.images,
         categoryId: form.categoryId || undefined,
-        condition: form.condition,
+        condition: form.condition as Equipment['condition'],
         purchaseDate: form.purchaseDate || undefined,
         purchasePrice: form.purchasePrice ? parseFloat(form.purchasePrice) : undefined,
         currentValue: form.currentValue ? parseFloat(form.currentValue) : undefined,

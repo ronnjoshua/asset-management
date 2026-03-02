@@ -96,21 +96,21 @@ export function PetDialog({ open, onOpenChange, pet, onSave }: PetDialogProps) {
     setLoading(true);
 
     try {
-      const data = {
+      const data: Partial<Pet> = {
         name: form.name,
         species: form.species,
         breed: form.breed || undefined,
         age: form.age ? parseInt(form.age) : undefined,
-        ageUnit: form.ageUnit,
-        gender: form.gender || undefined,
+        ageUnit: form.ageUnit as Pet['ageUnit'],
+        gender: form.gender as Pet['gender'] || undefined,
         price: parseFloat(form.price),
         costPrice: form.costPrice ? parseFloat(form.costPrice) : undefined,
-        healthStatus: form.healthStatus,
+        healthStatus: form.healthStatus as Pet['healthStatus'],
         description: form.description || undefined,
         images: form.images,
         categoryId: form.categoryId || undefined,
         quantity: parseInt(form.quantity),
-        status: form.status,
+        status: form.status as Pet['status'],
         weight: form.weight ? parseFloat(form.weight) : undefined,
         color: form.color || undefined,
         vaccinated: form.vaccinated,
