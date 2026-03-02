@@ -7,18 +7,20 @@ import { Toaster } from '@/components/ui/sonner';
 import api from '@/lib/api';
 
 function TokenSync({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
 
   useEffect(() => {
-    if (session) {
+    if (status === 'authenticated' && session) {
       const token = (session as any).accessToken;
       if (token) {
         api.setToken(token);
+        localStorage.setItem('token', token);
       }
-    } else {
+    } else if (status === 'unauthenticated') {
       api.setToken(null);
+      localStorage.removeItem('token');
     }
-  }, [session]);
+  }, [session, status]);
 
   return <>{children}</>;
 }
