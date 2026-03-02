@@ -242,14 +242,14 @@ export default function CategoriesPage() {
             <div className="space-y-2">
               <Label htmlFor="parent">Parent Category</Label>
               <Select
-                value={form.parentId}
-                onValueChange={(value) => setForm({ ...form, parentId: value })}
+                value={form.parentId || 'none'}
+                onValueChange={(value) => setForm({ ...form, parentId: value === 'none' ? '' : value })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="None (top-level)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None (top-level)</SelectItem>
+                  <SelectItem value="none">None (top-level)</SelectItem>
                   {parentCategories
                     .filter((cat) => cat.id !== editingCategory?.id)
                     .map((cat) => (
