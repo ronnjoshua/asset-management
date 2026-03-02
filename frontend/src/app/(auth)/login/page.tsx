@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
+import api from '@/lib/api';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,6 +21,10 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // First, login via API to get and store token
+      await api.login(email, password);
+
+      // Then also sign in with NextAuth for session management
       const result = await signIn('credentials', {
         email,
         password,
@@ -34,7 +39,7 @@ export default function LoginPage() {
         router.refresh();
       }
     } catch (error) {
-      toast.error('An error occurred during login');
+      toast.error(error instanceof Error ? error.message : 'Invalid email or password');
     } finally {
       setIsLoading(false);
     }
